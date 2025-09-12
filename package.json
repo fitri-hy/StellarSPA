@@ -5,11 +5,11 @@
   "main": "app.js",
   "scripts": {
     "start": "concurrently \"npm run build:css --watch\" \"npx live-server\"",
-    "build": "npm run build:css && npm run build:js && npm run copy:assets",
-    "build:css": "npx postcss assets/css/tailwind.css -o assets/css/styles.css",
-    "build:js": "npx terser app/*.js -c -m -o dist/app.min.js",
-    "copy:assets": "mkdir -p dist/assets && cp -r assets/* dist/assets/ && cp index.html dist/"
-  },
+  "build": "npm run build:css && npm run build:js && npm run copy:all",
+  "build:css": "npx postcss assets/css/tailwind.css -o dist/assets/css/styles.css --minify",
+  "build:js": "npx esbuild app/*.js views/**/*.js routes/*.js services/*.js utils/*.js --outdir=dist --minify --bundle=false",
+  "copy:all": "npx cpx \"assets/**/*\" dist/assets && npx cpx \"config/**/*\" dist/config && npx cpx \"index.html\" dist"
+},
   "keywords": [
     "SPA",
     "JavaScript",
@@ -33,9 +33,10 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.13",
     "concurrently": "^9.2.1",
+    "cpx": "^1.5.0",
+    "esbuild": "^0.25.9",
     "postcss": "^8.5.6",
     "postcss-cli": "^11.0.1",
-    "tailwindcss": "^4.1.13",
-    "terser": "^5.44.0"
+    "tailwindcss": "^4.1.13"
   }
 }

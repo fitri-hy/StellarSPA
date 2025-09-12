@@ -24,6 +24,8 @@ npm start
 
 ### Production
 
+> Nginx / Apache
+
 ```
 npm install
 npm run build
