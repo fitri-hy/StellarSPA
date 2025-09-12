@@ -4,17 +4,38 @@
   "description": "StellarSPA is a pure JavaScript-based Single Page Web Application (SPA) (no external dependencies) designed to be lightweight, fast, and easy to understand.",
   "main": "app.js",
   "scripts": {
-    "build:css": "npx postcss assets/css/tailwind.css -o assets/css/styles.css --watch",
-    "start": "concurrently \"npm run build:css\" \"npx live-server\""
+    "start": "concurrently \"npm run build:css --watch\" \"npx live-server\"",
+    "build": "npm run build:css && npm run build:js && npm run copy:assets",
+    "build:css": "npx postcss assets/css/tailwind.css -o assets/css/styles.css",
+    "build:js": "npx terser app/*.js -c -m -o dist/app.min.js",
+    "copy:assets": "mkdir -p dist/assets && cp -r assets/* dist/assets/ && cp index.html dist/"
   },
-  "keywords": [],
+  "keywords": [
+    "SPA",
+    "JavaScript",
+    "lightweight",
+    "framework",
+    "single-page-app",
+    "reactive",
+    "frontend",
+    "modular"
+  ],
   "author": "Fitri HY",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fitri-hy/StellarSPA.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fitri-hy/StellarSPA/issues"
+  },
+  "homepage": "https://github.com/fitri-hy/StellarSPA#readme",
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.13",
     "concurrently": "^9.2.1",
     "postcss": "^8.5.6",
     "postcss-cli": "^11.0.1",
-    "tailwindcss": "^4.1.13"
+    "tailwindcss": "^4.1.13",
+    "terser": "^5.44.0"
   }
 }

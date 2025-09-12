@@ -14,6 +14,23 @@ StellarSPA is a pure JavaScript-based Single Page Application (SPA) mini framewo
 - Modular & extensible
 - and more
 
+### Development
+
+```
+npm install
+npm start
+```
+
+
+### Production
+
+```
+npm install
+npm run build
+```
+
+### Flder Structure
+
 ```
 StellarSPA/
 │
