@@ -2,7 +2,6 @@ import { USF } from '../../app/States.js';
 import { MainLayout } from '../../views/layouts/MainLayout.js';
 import { Landing } from '../views/pages/landing.js';
 import { Blog } from '../views/pages/blog.js';
-import { Product } from '../views/pages/product.js';
 import { NotFound } from '../views/pages/error.js';
 import { debugLog } from '../../utils/debug.js';
 
@@ -58,48 +57,6 @@ export const routes = [
             return head;
         },
         onAccess: (params) => debugLog('Accessed route: /blog/:id', params) 
-    },
-	{ 
-        path: '/products', 
-        component: Product, 
-        layout: MainLayout, 
-        stateKeys: ['products'],
-        headProps: { 
-            title: 'Products', 
-            description: 'List of products' 
-        },
-        onAccess: () => debugLog('Accessed route: /products') 
-    },
-    { 
-        path: '/products/:id', 
-        component: Product, 
-        layout: MainLayout, 
-        stateKeys: ['products'],
-        headProps: (params) => {
-            const products = USF.get('products', []);
-            let head;
-
-            if(params.id){
-                const product = products.find(p => String(p.id) === params.id);
-                if(product){
-                    head = { 
-                        title: product.title, 
-                        description: `Price: $${product.price}` 
-                    };
-                }
-            }
-
-            if(!head){
-                head = { 
-                    title: `Product ${params.id}`, 
-                    description: `Detail for product ${params.id}` 
-                };
-            }
-
-            debugLog(`Computed headProps for /products/${params.id}:`, head);
-            return head;
-        },
-        onAccess: (params) => debugLog('Accessed route: /products/:id', params) 
     },
     { 
         path: '*', 
