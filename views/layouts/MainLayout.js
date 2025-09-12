@@ -1,23 +1,20 @@
-import { toggleDarkMode } from '../../utils/theme.js';
 import { USF } from '../../app/States.js';
 import { SkeletonList } from '../../utils/skeleton.js';
+import { Header } from '../components/header.js';
+import { Footer } from '../components/footer.js';
 
 export function MainLayout(content) {
     const isLoading = USF.get('loading', false);
 
     return `
-    <div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-        <nav class="p-4 bg-blue-500 text-white flex justify-between items-center">
-            <span class="font-bold">NOVA App</span>
-            <div class="space-x-4">
-                <a href="#/" class="hover:underline">Home</a>
-                <a href="#/dashboard" class="hover:underline">Dashboard</a>
-                <button onclick="toggleDarkMode()" class="ml-2 px-3 py-1 bg-gray-800 text-white rounded">Toggle Dark</button>
-            </div>
-        </nav>
-        <main class="p-6">
+    <main class="flex flex-col min-h-screen bg-gradient-to-br from-white via-sky-50/60 to-indigo-50/60 dark:from-slate-900 dark:via-gray-900 dark:to-neutral-900 text-neutral-700 dark:text-neutral-200">
+        ${Header()}
+
+        <section class="flex-1 p-4 md:p-6 flex flex-col">
             ${isLoading ? SkeletonList({ count: 5 }) : content}
-        </main>
-    </div>
+        </section>
+
+        ${Footer()}
+    </main>
     `;
 }

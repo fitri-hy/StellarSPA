@@ -1,17 +1,16 @@
 {
-  "name": "my-app",
+  "name": "stellar-spa",
   "version": "1.0.0",
-  "description": "",
-  "main": "main.js",
+  "description": "StellarSPA is a pure JavaScript-based Single Page Web Application (SPA) (no external dependencies) designed to be lightweight, fast, and easy to understand.",
+  "main": "app.js",
   "scripts": {
     "build:css": "npx postcss assets/css/tailwind.css -o assets/css/styles.css --watch",
     "start": "concurrently \"npm run build:css\" \"npx live-server\""
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
+  "author": "Fitri HY",
+  "license": "MIT",
+  "devDependencies": {
     "@tailwindcss/postcss": "^4.1.13",
     "concurrently": "^9.2.1",
     "postcss": "^8.5.6",

@@ -1,54 +1,46 @@
 import { sanitizeObject } from '../utils/sanitize.js';
 import { debugLog, debugWarn, debugError } from '../utils/debug.js';
+import { AppConfig } from '../config/app.config.js';
 
-const DEFAULT_TIMEOUT = 10000;
-const MAX_RETRIES = 3;
+export async function httpRequest(url, { method = 'GET', body, headers = {}, timeout, retries } = {}) {
+    const DEFAULT_TIMEOUT = timeout ?? AppConfig.api.defaultTimeout;
+    const MAX_RETRIES = retries ?? AppConfig.api.maxRetries;
 
-async function httpRequest(url, { method = 'GET', body, headers = {}, timeout = DEFAULT_TIMEOUT, retries = MAX_RETRIES } = {}) {
     if (body && (method === 'POST' || method === 'PUT')) {
         body = JSON.stringify(sanitizeObject(body));
         headers['Content-Type'] = 'application/json';
-        debugLog(`${method} body sanitized:`, body);
+        if (AppConfig.debug) debugLog(`${method} body sanitized:`, body);
     }
 
     let attempt = 0;
 
-    while (attempt < retries) {
+    while (attempt < MAX_RETRIES) {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), timeout);
+        const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
 
         try {
-            debugLog(`HTTP ${method} request:`, url, headers);
+            if (AppConfig.debug) debugLog(`HTTP ${method} request:`, url, headers);
             const res = await fetch(url, { method, body, headers, signal: controller.signal });
             clearTimeout(timer);
 
             let data;
-            try {
-                data = await res.json();
-            } catch {
-                data = await res.text();
-            }
+            try { data = await res.json(); }
+            catch { data = await res.text(); }
 
-            if (method === 'GET' || method === 'DELETE') {
-                data = sanitizeObject(data);
-            }
+            if (method === 'GET' || method === 'DELETE') data = sanitizeObject(data);
 
-            if (!res.ok) {
-                throw new Error(data?.message || `Request failed with status ${res.status}`);
-            }
+            if (!res.ok) throw new Error(data?.message || `Request failed with status ${res.status}`);
 
-            debugLog(`HTTP ${method} success:`, url, data);
+            if (AppConfig.debug) debugLog(`HTTP ${method} success:`, url, data);
             return data;
         } catch (err) {
             clearTimeout(timer);
             attempt++;
-
-            if (attempt < retries && (err.name === 'AbortError' || err.message.includes('NetworkError'))) {
-                debugWarn(`Attempt ${attempt} failed, retrying...`);
+            if (attempt < MAX_RETRIES && (err.name === 'AbortError' || err.message.includes('NetworkError'))) {
+                if (AppConfig.debug) debugWarn(`Attempt ${attempt} failed, retrying...`);
                 continue;
             }
-
-            debugError('HTTP Error:', err);
+            if (AppConfig.debug) debugError('HTTP Error:', err);
             throw { status: err.status || 500, message: err.message };
         }
     }

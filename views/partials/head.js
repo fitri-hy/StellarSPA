@@ -1,6 +1,10 @@
-export function Head({ title = 'NOVA App', description = '', keywords = '' } = {}) {
+import { AppConfig } from '../../config/app.config.js';
+
+export function Head({ title, description = '', keywords = '' } = {}) {
+    const pageTitle = title || AppConfig.system?.appname;
+	
     return `
-        <title>${title}</title>
+        <title>${pageTitle}</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="${description}">

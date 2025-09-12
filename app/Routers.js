@@ -121,12 +121,12 @@ class Router {
     }
 }
 
-export const NOVARouter = new Router();
+export const Route = new Router();
 
 export function initRouter() {
-    routes.forEach(route => NOVARouter.register(route));
-    NOVARouter.setErrorHandler(error => MainLayout(InternalError(error)));
-    NOVARouter.handleRoute();
-    window.router = NOVARouter;
+    routes.forEach(route => Route.register(route));
+    Route.setErrorHandler(error => MainLayout(InternalError(error)));
+    Route.handleRoute();
+    window.router = Route;
     debugLog('Router initialized');
 }

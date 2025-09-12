@@ -5,6 +5,7 @@ import { debugLog } from '../utils/debug.js';
 
 function initApp() {
     debugLog('Initializing app...');
+
     initState();
     initRouter();
 

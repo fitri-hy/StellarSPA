@@ -1,7 +1,7 @@
 import { AppConfig } from '../config/app.config.js';
 
-export function SkeletonList({ count = 5, className = '', itemTemplate } = {}) {
-    if (!AppConfig.ui?.useSkeleton) return '';
+export function SkeletonList({ count = 5, className = '', itemTemplate, active = false } = {}) {
+    if (!AppConfig.ui?.useSkeleton || !active) return '';
 
     const defaultItem = () => `
         <div class="p-4 bg-gray-200 dark:bg-gray-700 rounded-lg shadow animate-pulse flex space-x-4">
@@ -18,8 +18,8 @@ export function SkeletonList({ count = 5, className = '', itemTemplate } = {}) {
     return `<div class="${className} space-y-4">${Array.from({ length: count }).map(() => itemHTML()).join('')}</div>`;
 }
 
-export function SkeletonCard({ className = '' } = {}) {
-    if (!AppConfig.ui?.useSkeleton) return '';
+export function SkeletonCard({ className = '', active = false } = {}) {
+    if (!AppConfig.ui?.useSkeleton || !active) return '';
 
     return `
         <div class="p-6 bg-gray-200 dark:bg-gray-700 rounded-lg shadow animate-pulse space-y-4 ${className}">

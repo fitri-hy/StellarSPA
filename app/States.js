@@ -1,3 +1,4 @@
+import { AppConfig } from '../config/app.config.js';
 import { debugLog } from '../utils/debug.js';
 
 class GlobalState {
@@ -22,6 +23,10 @@ class GlobalState {
 
         this.state[key] = value;
         debugLog(`State set: ${key} =`, value, '(old:', oldValue, ')');
+
+        if (Array.isArray(value) && !this.computed[key + 'Count']) {
+            this.defineComputed(key + 'Count', state => (state.get(key) || []).length);
+        }
 
         if (this.listeners[key]) this.listeners[key].forEach(fn => fn(value, oldValue));
         this.globalListeners.forEach(fn => fn(key, value, oldValue));
@@ -51,16 +56,16 @@ class GlobalState {
         if (!key) {
             this.globalListeners.push(fn);
             debugLog('Subscribed to global state');
-            return () => { 
-                this.globalListeners = this.globalListeners.filter(f => f !== fn); 
+            return () => {
+                this.globalListeners = this.globalListeners.filter(f => f !== fn);
                 debugLog('Unsubscribed from global state');
             };
         } else {
             if (!this.listeners[key]) this.listeners[key] = [];
             this.listeners[key].push(fn);
             debugLog(`Subscribed to state: ${key}`);
-            return () => { 
-                this.listeners[key] = this.listeners[key].filter(f => f !== fn); 
+            return () => {
+                this.listeners[key] = this.listeners[key].filter(f => f !== fn);
                 debugLog(`Unsubscribed from state: ${key}`);
             };
         }
@@ -78,8 +83,8 @@ export const USF = new GlobalState();
 
 export function initState() {
     debugLog('Initializing global state...');
-    USF.set('username', 'NovaUser');
+    const username = AppConfig.usf?.username;
+    USF.set('username', username);
     USF.set('loading', false);
-    USF.defineComputed('postCount', state => (state.get('posts') || []).length);
     debugLog('Initial state initialized');
 }
