@@ -1,3 +1,5 @@
+<img src="./assets/images/icon.png" alt="icon" />
+
 # StellarSPA
 
 StellarSPA is a pure JavaScript-based Single Page Application (SPA) mini framework (without external dependencies) designed to be lightweight, fast, and easy to understand.
