@@ -10,6 +10,7 @@ export const routes = [
         path: '/', 
         component: Landing, 
         layout: MainLayout, 
+        stateKeys: ['visits', 'username'],
         headProps: { 
             title: 'Landing Page', 
             description: 'Welcome to Stellar App' 
@@ -62,6 +63,7 @@ export const routes = [
         path: '*', 
         component: NotFound, 
         layout: MainLayout, 
+        stateKeys: ['lastError'],
         headProps: { 
             title: '404 Not Found', 
             description: 'Page not found' 
