@@ -6,6 +6,7 @@ StellarSPA is a pure JavaScript-based Single Page Application (SPA) mini framewo
 
 ### Key Features:
 
+- Instance Global State Manager
 - SPA-based, hash routing, dynamic layout
 - Reactive global state & computed props
 - Smart HTTP (timeout, retry, cache, sanitize)

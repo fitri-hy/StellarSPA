@@ -21,7 +21,7 @@ export function Blog(params = {}) {
 				<div class="text-center mb-8">
 					<h2 class="text-3xl font-extrabold mb-2">Blog Detail Examples</h2>
 				</div>
-				<div class="max-w-3xl mx-auto p-5 bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300">
+				<div class="max-w-3xl mx-auto p-5 bg-white dark:bg-slate-800 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300">
 					<h2 class="text-3xl font-bold mb-4 text-center">${post.title}</h2>
 					<p class="mb-6 text-justify">${post.body}</p>
 					<div class="text-center">
@@ -45,7 +45,7 @@ export function Blog(params = {}) {
 
 			<div class="space-y-6">
 				${posts.length > 0 ? posts.map(post => `
-					<div class="p-5 bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300">
+					<div class="p-5 bg-white  dark:bg-slate-800 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300">
 						<h4 class="text-xl font-semibold mb-2">
 							<a href="#/blog/${post.id}" class="hover:text-sky-500 transition-colors duration-200">${post.title}</a>
 						</h4>

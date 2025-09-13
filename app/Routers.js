@@ -11,10 +11,7 @@ class Router {
         this.unsubscribeFns = [];
         this.errorHandler = null;
 
-        window.addEventListener('hashchange', () => {
-            debugLog('Hash changed, handling route...');
-            this.handleRoute();
-        });
+        window.addEventListener('hashchange', () => this.handleRoute());
     }
 
     register(route) {
@@ -23,8 +20,9 @@ class Router {
     }
 
     navigate(path) {
+        const current = window.location.hash.slice(1);
         debugLog('Navigating to:', path);
-        if (window.location.hash.slice(1) !== path) window.location.hash = path;
+        if (current !== path) window.location.hash = path;
         else this.handleRoute();
     }
 
@@ -33,48 +31,44 @@ class Router {
         const pathParts = actualPath.split('/').filter(Boolean);
         if (routeParts.length !== pathParts.length) return null;
 
-        const params = {};
-        for (let i = 0; i < routeParts.length; i++) {
-            const part = routeParts[i];
-            if (part.startsWith(':')) params[part.slice(1)] = pathParts[i];
-            else if (part !== pathParts[i]) return null;
-        }
-        return params;
+        return routeParts.reduce((params, part, i) => {
+            if (params === null) return null;
+            if (part.startsWith(':')) {
+                return { ...params, [part.slice(1)]: pathParts[i] };
+            }
+            return part === pathParts[i] ? params : null;
+        }, {});
     }
 
-    htmlToNodes(html) {
-        const template = document.createElement('template');
-        template.innerHTML = html.trim();
-        return Array.from(template.content.childNodes);
-    }
-
-    render(route, params) {
+    renderContent(content, layout = MainLayout) {
         const app = document.getElementById('app');
         if (!app) return;
 
         try {
-            let headProps = route.headProps;
-            if (typeof headProps === 'function') headProps = headProps(params);
-            if (headProps) {
-                DynamicHead(headProps);
-                debugLog('Head updated:', headProps);
-            }
-
-            let content = route.component(params);
-            if (route.layout) content = route.layout(content);
-            app.replaceChildren(...this.htmlToNodes(content));
-
-            debugLog(`Rendered route: ${route.path}`, params);
+            const html = layout ? layout(content) : content;
+            app.innerHTML = html;
         } catch (error) {
             debugError('Rendering error:', error);
-            if (this.errorHandler) {
-                const content = this.errorHandler(error);
-                app.replaceChildren(...this.htmlToNodes(content));
-            } else {
-                const content = MainLayout(InternalError(error));
-                app.replaceChildren(...this.htmlToNodes(content));
-            }
+            const fallback = this.errorHandler
+                ? this.errorHandler(error)
+                : MainLayout(InternalError(error));
+            app.innerHTML = fallback;
         }
+    }
+
+    render(route, params) {
+        let headProps = typeof route.headProps === 'function'
+            ? route.headProps(params)
+            : route.headProps;
+
+        if (headProps) {
+            DynamicHead(headProps);
+            debugLog('Head updated:', headProps);
+        }
+
+        const content = route.component(params);
+        this.renderContent(content, route.layout);
+        debugLog(`Rendered route: ${route.path}`, params);
     }
 
     handleRoute() {
@@ -94,8 +88,11 @@ class Router {
         }
 
         if (!matchedRoute) {
-            matchedRoute = { component: NotFound, layout: MainLayout, headProps: { title: '404 Not Found' } };
-            params = {};
+            matchedRoute = {
+                component: NotFound,
+                layout: MainLayout,
+                headProps: { title: '404 Not Found' },
+            };
             debugWarn('No matching route found. Using 404.');
         }
 

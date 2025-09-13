@@ -11,7 +11,7 @@ export const AppConfig = {
         maxRetries: 3
     },
     theme: {
-        darkMode: false        // true/ false / 'auto'
+        darkMode: 'auto'        // true/ false / 'auto'
     },
     ui: {
         useSkeleton: true
