@@ -2,7 +2,7 @@
 
 # StellarSPA
 
-StellarSPA is a pure JavaScript-based Single Page Application (SPA) mini framework (without external dependencies) designed to be lightweight, fast, and easy to understand.
+StellarSPA is a pure JavaScript-based Single Page Application (SPA), without external dependencies, designed to be lightweight, fast, and easy to understand.
 
 ### Key Features:
 
@@ -14,6 +14,7 @@ StellarSPA is a pure JavaScript-based Single Page Application (SPA) mini framewo
 - Dark mode toggle & auto-detect
 - Skeleton loading UI
 - State-driven UI
+- Offline State Cache
 - API interceptors & middleware
 - Integrated debug logs
 - Modular & extensible
@@ -21,7 +22,6 @@ StellarSPA is a pure JavaScript-based Single Page Application (SPA) mini framewo
 - Stale-While-Revalidate (SWR)
 - Auto USF State Update
 - Event Hooks
-
 - and more
 
 ### Development
