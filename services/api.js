@@ -1,79 +1,86 @@
 import { httpRequest } from '../app/Https.js';
 import { AppConfig } from '../config/app.config.js';
-import { debugLog, debugWarn, debugError } from '../utils/debug.js';
 import { USF } from '../app/States.js';
+import { debugLog, debugWarn, debugError } from '../utils/debug.js';
 
 export const ApiService = (() => {
     const cache = new Map();
     const interceptors = { request: [], response: [] };
-    let activeRequests = 0;
 
-    function addRequestInterceptor(fn) {
-        interceptors.request.push(fn);
-        return () => {
-            interceptors.request = interceptors.request.filter(i => i !== fn);
-        };
+    const STORAGE_KEY = 'ApiCache_v1';
+
+    // Load cache dari localStorage saat init
+    const savedCache = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    for (const [key, value] of Object.entries(savedCache)) {
+        cache.set(key, value);
     }
 
-    function addResponseInterceptor(fn) {
-        interceptors.response.push(fn);
-        return () => {
-            interceptors.response = interceptors.response.filter(i => i !== fn);
-        };
+    function persistCache() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(Object.fromEntries(cache)));
     }
 
-    function setLoading(isLoading) {
-        if (isLoading) {
-            activeRequests++;
-        } else {
-            activeRequests = Math.max(0, activeRequests - 1);
-        }
-        USF.set('loading', activeRequests > 0);
-    }
+    function addRequestInterceptor(fn) { interceptors.request.push(fn); }
+    function addResponseInterceptor(fn) { interceptors.response.push(fn); }
 
     async function request(url, options = {}) {
-        const { method = 'GET', body, headers = {}, useCache = AppConfig.api.useCache, ttl = 0 } = options;
+        const { 
+            method = 'GET', 
+            body, 
+            headers = {}, 
+            useCache = AppConfig.api.useCache, 
+            swr = true // default aktifin SWR
+        } = options;
+
         const timeout = options.timeout ?? AppConfig.api.defaultTimeout;
         const retries = options.retries ?? AppConfig.api.maxRetries;
 
-        setLoading(true);
+        USF.set('loading', true);
 
         try {
             let req = { url, method, body, headers };
 
-            for (const fn of interceptors.request) {
-                req = (await fn(req)) || req;
-            }
+            for (const fn of interceptors.request) req = (await fn(req)) || req;
 
+            // Cek cache dulu (SWR logic)
             if (method === 'GET' && useCache && cache.has(req.url)) {
-                const { data, expiry } = cache.get(req.url);
-                if (!expiry || Date.now() < expiry) {
-                    debugLog(`Cache hit: ${req.url}`);
-                    return data;
+                const cachedData = cache.get(req.url);
+                debugLog(`Cache hit: ${req.url}`, cachedData);
+
+                if (swr) {
+                    // Fetch ulang di background → update state
+                    httpRequest(req.url, { method, body, headers, timeout, retries })
+                        .then(async freshData => {
+                            let resFresh = freshData;
+                            for (const fn of interceptors.response) resFresh = (await fn(resFresh, req)) || resFresh;
+                            cache.set(req.url, resFresh);
+                            persistCache();
+                            debugLog(`SWR refreshed: ${req.url}`, resFresh);
+
+                            // Update state kalau ada key terkait
+                            if (options.stateKey) {
+                                USF.set(options.stateKey, resFresh);
+                            }
+                        })
+                        .catch(err => debugWarn(`SWR failed for ${req.url}`, err));
                 }
-                cache.delete(req.url);
+
+                return cachedData; // return cache langsung (fast render)
             }
 
-            const data = await httpRequest(req.url, { method: req.method, body: req.body, headers: req.headers, timeout, retries });
+            // Kalau gak ada cache → request normal
+            const data = await httpRequest(req.url, { method, body, headers, timeout, retries });
 
             let resData = data;
-            for (const fn of interceptors.response) {
-                resData = (await fn(resData, req)) || resData;
-            }
+            for (const fn of interceptors.response) resData = (await fn(resData, req)) || resData;
 
             if (method === 'GET' && useCache) {
-                cache.set(req.url, { 
-                    data: resData, 
-                    expiry: ttl ? Date.now() + ttl : null 
-                });
+                cache.set(req.url, resData);
+                persistCache();
             }
 
             return resData;
-        } catch (err) {
-            debugError('ApiService Error:', err);
-            throw err;
         } finally {
-            setLoading(false);
+            USF.set('loading', false);
         }
     }
 

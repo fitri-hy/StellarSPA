@@ -2,20 +2,20 @@ import { USF } from '../../app/States.js';
 import { ApiService } from '../../services/api.js';
 
 export function Blog(params = {}) {
-    const username = USF.get('username', 'Guest');
     const posts = USF.get('posts', []);
     const postCount = USF.get('postsCount', 0);
     const loading = USF.get('loading', false);
 
     USF.subscribe('posts', () => window.router.handleRoute());
 
-    if (!posts.length && !loading) {
-        ApiService.get('https://jsonplaceholder.typicode.com/posts?_limit=5')
-            .then(data => {
-                USF.set('posts', data || []);
-                USF.set('postsCount', (data || []).length);
-            })
-            .catch(err => console.error('Failed to fetch posts:', err));
+    if (!posts.length) {
+        ApiService.get('https://jsonplaceholder.typicode.com/posts?_limit=5', { 
+            stateKey: 'posts',
+            useCache: true,
+            swr: true
+        })
+        .then(data => USF.set('posts', data || []))
+        .catch(err => console.error('Failed to fetch posts:', err));
     }
 
     if (params.id) {

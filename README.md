@@ -18,6 +18,7 @@ StellarSPA is a pure JavaScript-based Single Page Application (SPA) mini framewo
 - Integrated debug logs
 - Modular & extensible
 - Automatic Sanitation
+- Stale-While-Revalidate (SWR)
 - and more
 
 ### Development
