@@ -5,12 +5,16 @@ export function Blog(params = {}) {
     const username = USF.get('username', 'Guest');
     const posts = USF.get('posts', []);
     const postCount = USF.get('postsCount', 0);
+    const loading = USF.get('loading', false);
 
     USF.subscribe('posts', () => window.router.handleRoute());
 
-    if (!posts.length) {
+    if (!posts.length && !loading) {
         ApiService.get('https://jsonplaceholder.typicode.com/posts?_limit=5')
-            .then(data => USF.set('posts', data || []))
+            .then(data => {
+                USF.set('posts', data || []);
+                USF.set('postsCount', (data || []).length);
+            })
             .catch(err => console.error('Failed to fetch posts:', err));
     }
 
@@ -34,6 +38,7 @@ export function Blog(params = {}) {
         }
     }
 
+    // daftar post
     return `
 		<div class="max-w-3xl mx-auto p-6">
 			<div class="text-center mb-8">
@@ -44,15 +49,19 @@ export function Blog(params = {}) {
 			<h3 class="text-2xl font-bold mb-4 border-b-2 border-gray-200 pb-2">Latest Posts:</h3>
 
 			<div class="space-y-6">
-				${posts.length > 0 ? posts.map(post => `
-					<div class="p-5 bg-white  dark:bg-slate-800 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300">
-						<h4 class="text-xl font-semibold mb-2">
-							<a href="#/blog/${post.id}" class="hover:text-sky-500 transition-colors duration-200">${post.title}</a>
-						</h4>
-						<p class="line-clamp-3">${post.body}</p>
-						<div class="mt-3 text-sm text-gray-400">ID: ${post.id}</div>
-					</div>
-				`).join('') : `<p class="text-gray-400 text-center py-4">Loading posts...</p>`}
+				${loading 
+					? `<p class="text-gray-400 text-center py-4">Loading posts...</p>` 
+					: posts.length > 0 
+						? posts.map(post => `
+							<div class="p-5 bg-white dark:bg-slate-800 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300">
+								<h4 class="text-xl font-semibold mb-2">
+									<a href="#/blog/${post.id}" class="hover:text-sky-500 transition-colors duration-200">${post.title}</a>
+								</h4>
+								<p class="line-clamp-3">${post.body}</p>
+								<div class="mt-3 text-sm text-gray-400">ID: ${post.id}</div>
+							</div>
+						`).join('') 
+						: `<p class="text-gray-400 text-center py-4">No posts available.</p>`}
 			</div>
 		</div>
 	`;
