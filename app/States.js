@@ -9,6 +9,39 @@ class GlobalState {
         this.computed = {};
         this.middlewares = { before: [], after: [] };
         this._updatingComputed = false;
+        this.events = {};
+    }
+
+    on(event, fn) {
+        if (!this.events[event]) this.events[event] = [];
+        this.events[event].push(fn);
+        debugLog(`Event subscribed: ${event}`);
+        return () => this.off(event, fn);
+    }
+
+    once(event, fn) {
+        const wrapper = (payload) => {
+            fn(payload);
+            this.off(event, wrapper);
+        };
+        this.on(event, wrapper);
+    }
+
+    off(event, fn) {
+        if (this.events[event]) {
+            this.events[event] = this.events[event].filter(f => f !== fn);
+            debugLog(`Event unsubscribed: ${event}`);
+        }
+    }
+
+    emit(event, payload) {
+        if (this.events[event]) {
+            debugLog(`Event emitted: ${event}`, payload);
+            for (const fn of this.events[event]) {
+                try { fn(payload); }
+                catch (err) { console.error('Event handler error:', err); }
+            }
+        }
     }
 
     use(middleware) {
@@ -48,6 +81,8 @@ class GlobalState {
         }
 
         this._runMiddlewares('after', key, value, oldValue);
+        this.emit('state:change', { key, value, oldValue });
+        this.emit(`state:${key}`, { value, oldValue });
     }
 
     setMany(obj = {}) {
